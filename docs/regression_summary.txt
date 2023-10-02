@@ -1,0 +1,18 @@
+# possible obstacles with regressions
+# 1) non-linearity of features
+# - plotting the residuals of the model can identify if there is a pattern
+# - if residuals are not randomized, most likely some tranformation needs to occur
+# - for example if we see an exponential convex shape in residuals, would make sense to square features
+# 2) correlation of error terms
+# - discovery is same as above
+# 3) non-constant variation of the error terms
+# - we can identify heteroskedasticity through a funnel shape in residual plots
+# - represents the error terms have non-constant variance
+# - solution would be to transform reponse by concave function (log or square root)
+# 4) collinearity
+# - when multiple features are very correlated
+# - we can drop a variable or possibly combine the variables
+# 5) outliers
+# - can drop outliers, but also can be crucial to include them due to data lost
+
+NOTE: that collinearity and heteroskedasticity dont really matter if aim is just prediction
