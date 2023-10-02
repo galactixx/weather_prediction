@@ -8,9 +8,9 @@ from statsmodels.tools.tools import add_constant
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 warnings.filterwarnings('ignore')
 
-from weather.utils import generate_test_train
+from regression.utils import generate_test_train
 from weather.ridge_regression import ridge_regression
-from weather.linear_regression import linear_regression
+from regression.linear_regression import linear_regression
 
 # from documentation: 'Note: 9’s in a field (e.g.9999) indicate missing data or data that has not been received'
 # remove these values as they are not valid to use in analysis
