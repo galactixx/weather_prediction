@@ -18,8 +18,8 @@ from regression.linear_regression import linear_regression
 # --- NOT AN ISSUE WHEN OUR FILTERING IS APPLIED ---
 
 # path and contents of weather data directory
-BASE_PATH = './data/weather/'
-contents = os.listdir('./data/weather/')
+BASE_PATH = './data/'
+contents = os.listdir(BASE_PATH)
 
 def _load_data(file: str) -> pd.DataFrame:
     return pd.read_csv(f'{BASE_PATH}{file}', parse_dates=['DATE'])
