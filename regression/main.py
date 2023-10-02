@@ -4,13 +4,13 @@ import pandas as pd
 import seaborn as sns
 import scipy.stats as stats
 import matplotlib.pyplot as plt
+from statsmodels.tools.tools import add_constant
+from statsmodels.stats.outliers_influence import variance_inflation_factor
 warnings.filterwarnings('ignore')
 
-from weather import utils
-from statsmodels.tools.tools import add_constant
+from weather.utils import generate_test_train
 from weather.ridge_regression import ridge_regression
 from weather.linear_regression import linear_regression
-from statsmodels.stats.outliers_influence import variance_inflation_factor
 
 # from documentation: 'Note: 9’s in a field (e.g.9999) indicate missing data or data that has not been received'
 # remove these values as they are not valid to use in analysis
@@ -115,7 +115,7 @@ if __name__ == '__main__':
         _generate_correlation_matrix(data_filtered=data_filtered)
 
     # split model into train and test data
-    data_train, data_test = utils.generate_test_train(data=data_filtered)
+    data_train, data_test = generate_test_train(data=data_filtered)
 
     # check normal distribution of features
     if do_normal_feature_distribution:
