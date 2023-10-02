@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from typing import List
 from typing import Tuple
 import matplotlib.pyplot as plt
 from sklearn.metrics import (
@@ -25,17 +26,19 @@ def generate_test_train(data: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]
     data_test = data[data.index >= pd.to_datetime('6/1/2017')]
     return data_train, data_test
 
-def generate_evals(target: str, predictions: list, data_test: pd.DataFrame) -> None:
+def generate_evals(test: str, target: str, predictions: list, data_test: pd.DataFrame) -> List[str]:
     """generate evals after fitting and predicting values."""
+    evals = []
 
     # get r-squared from test data
     r_squared = r2_score(data_test[target], predictions)
-    print(f'R-Squared (Linear Regression): {r_squared}')
+    evals.append(f'R-Squared ({test}): {r_squared}')
 
     # get the mae
     mae = mean_absolute_error(data_test[target], predictions)
-    print(f'Mean Absolute Error (Linear Regression): {mae}')
+    evals.append(f'Mean Absolute Error ({test}): {mae}')
 
     # get the mse
     mse = mean_squared_error(data_test[target], predictions)
-    print(f'Mean Squared Error (Linear Regression): {mse}')
+    evals.append(f'Mean Squared Error ({test}): {mse}')
+    return evals

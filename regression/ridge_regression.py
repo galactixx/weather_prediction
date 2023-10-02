@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from typing import List
 from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import TimeSeriesSplit
@@ -13,7 +14,7 @@ from regression.utils import (
 def ridge_regression(target: str,
                      core_features: list,
                      data: pd.DataFrame,
-                     do_residuals: bool = True) -> None:
+                     do_residuals: bool = True) -> List[str]:
     """"Ridge regression model on weather data from NOAA."""
     alphas = np.logspace(-4, 4, 100)
     data_x = data[core_features].values
@@ -50,6 +51,7 @@ def ridge_regression(target: str,
                                predictions=predictions)
 
     # generate all evals
-    generate_evals(target=target,
-                   predictions=predictions,
-                   data_test=data_test)
+    return generate_evals(test='Ridge Regression',
+                          target=target,
+                          predictions=predictions,
+                          data_test=data_test)

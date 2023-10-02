@@ -3,6 +3,7 @@ import warnings
 import pandas as pd
 import seaborn as sns
 import scipy.stats as stats
+from itertools import chain
 import matplotlib.pyplot as plt
 from statsmodels.tools.tools import add_constant
 from statsmodels.stats.outliers_influence import variance_inflation_factor
@@ -122,13 +123,19 @@ if __name__ == '__main__':
         _generate_feature_distributions(core_features=core_features,
                                         data_filtered=data_train)
 
-    # run linear regression model
-    linear_regression(target=TARGET,
-                      core_features=core_features,
-                      data_test=data_test,
-                      data_train=data_train)
-
-    # run ridge regression model
-    ridge_regression(target=TARGET,
-                     core_features=core_features,
-                     data=data_filtered)
+    # all evals generated from regression model
+    evals = [
+        linear_regression(target=TARGET,
+                          core_features=core_features,
+                          data_test=data_test,
+                          data_train=data_train),
+        ridge_regression(target=TARGET,
+                         core_features=core_features,
+                         data=data_filtered)
+    ]
+    evals = list(map(str, chain.from_iterable(evals)))
+    for eval in evals:
+        with open('./evals/regression.txt', 'w') as f:
+            for item in evals:
+                f.write("%s\n" % item)
+            f.close()

@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from typing import List
 from sklearn.linear_model import LinearRegression
 
 from regression.utils import (
@@ -11,7 +12,7 @@ def linear_regression(target: str,
                       core_features: list,
                       data_test: pd.DataFrame,
                       data_train: pd.DataFrame,
-                      do_residuals: bool = True) -> None:
+                      do_residuals: bool = True) -> List[str]:
     """Linear regression model on weather data from NOAA."""
 
     # fit model with data
@@ -26,6 +27,7 @@ def linear_regression(target: str,
                                predictions=predictions)
 
     # generate all evals
-    generate_evals(target=target,
-                   predictions=predictions,
-                   data_test=data_test)
+    return generate_evals(test='Linear Regression',
+                          target=target,
+                          predictions=predictions,
+                          data_test=data_test)

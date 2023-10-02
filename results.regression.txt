@@ -1,0 +1,6 @@
+R-Squared (Linear Regression): 0.8271838512609792
+Mean Absolute Error (Linear Regression): 4.758329405034792
+Mean Squared Error (Linear Regression): 46.423875696768306
+R-Squared (Ridge Regression): 0.8271839574504936
+Mean Absolute Error (Ridge Regression): 4.758310672074826
+Mean Squared Error (Ridge Regression): 46.42384717091089
