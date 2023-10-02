@@ -2,6 +2,7 @@ import os
 import warnings
 import pandas as pd
 import seaborn as sns
+from typing import Tuple
 import scipy.stats as stats
 from itertools import chain
 import matplotlib.pyplot as plt
@@ -22,7 +23,14 @@ BASE_PATH = './data/'
 contents = os.listdir(BASE_PATH)
 
 def _load_data(file: str) -> pd.DataFrame:
+    """load in individual csv file from data folder."""
     return pd.read_csv(f'{BASE_PATH}{file}', parse_dates=['DATE'])
+
+def _generate_dummies(column: str, data: pd.DataFrame) -> Tuple[pd.DataFrame, list]:
+    """generate dummies for a given pandas series."""
+    data_dummies = pd.get_dummies(data[column], prefix=column)
+    data = data.drop(column, axis=1)
+    return data.join(data_dummies), data_dummies.columns.tolist()
 
 def _generate_feature_distributions(core_features: list, data_filtered: pd.DataFrame) -> None:
     """generate qq-plot and histogram with features."""
@@ -76,12 +84,11 @@ if __name__ == '__main__':
     # but since only one station actually has non-null TMAX values, we will not do this and instead
     # remove null station data
     data = data[[TARGET] + core_features].dropna()
-    data['STATION'] = data['STATION'].astype('category').cat.codes
     stations = data['STATION'].unique().tolist()
 
     def generate_additional_features(station: str, core_features: list, data: pd.DataFrame) -> pd.DataFrame:
-        """generate additional lagged features."""
-        days_rolling = [10, 20]
+        """generate additional features (running average)."""
+        days_rolling = [5, 10, 20, 30]
         data_temp = data[data['STATION'] == station]
         for col in ['TMIN', 'TMAX']:
             for days in days_rolling:
@@ -99,6 +106,8 @@ if __name__ == '__main__':
     # remove all na values, while we could fill in the NULL percipitation values
     # its a small % so we remove to facilitate analysis
     data_filtered = data_filtered.dropna()
+    data_filtered, dummy_columns = _generate_dummies(column='STATION', data=data_filtered)
+    core_features.extend(dummy_columns)
     core_features.remove('STATION')
 
     # check linear relationship between features and target
