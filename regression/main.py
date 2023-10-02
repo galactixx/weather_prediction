@@ -1,5 +1,6 @@
 import os
 import warnings
+import numpy as np
 import pandas as pd
 import seaborn as sns
 from typing import Tuple
@@ -25,6 +26,10 @@ BASE_PATH = './data/'
 TEMP_COLUMNS = ['TMIN', 'TMAX']
 ROLLING_MEAN_DAYS = [5, 10, 20, 30]
 contents = os.listdir(BASE_PATH)
+
+def _generate_weights(days: int) -> list:
+    """dynamically generate weights based on number of days as input."""
+    return list(range(1, days+1))
 
 def _load_data(file: str) -> pd.DataFrame:
     """load in individual csv file from data folder."""
@@ -94,12 +99,14 @@ if __name__ == '__main__':
     stations = data['STATION'].unique().tolist()
 
     def generate_additional_features(station: str, core_features: list, data: pd.DataFrame) -> pd.DataFrame:
-        """generate additional features (running average)."""
+        """generate additional features."""
         data_temp = data[data['STATION'] == station]
         for col in TEMP_COLUMNS:
             for days in ROLLING_MEAN_DAYS:
-                new_feature_column = f'{col}_{days}_DAY_AVG'
-                data_temp[new_feature_column] = data_temp[col].rolling(days).mean()
+                new_feature_column = f'{col}_{days}_DAY_WEIGHT_AVG'
+                weights = _generate_weights(days=days)
+                data_temp[new_feature_column] = data_temp[col].rolling(days).apply(
+                    lambda x: np.dot(x, weights) / sum(weights), raw=True)
                 if new_feature_column not in core_features:
                     core_features.append(new_feature_column)
         return data_temp
