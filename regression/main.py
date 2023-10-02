@@ -18,13 +18,20 @@ from regression.linear_regression import linear_regression
 # remove these values as they are not valid to use in analysis
 # --- NOT AN ISSUE WHEN OUR FILTERING IS APPLIED ---
 
+# interations with our data (between TMIN and TMAX) did not result in a better model
+
 # path and contents of weather data directory
 BASE_PATH = './data/'
+TEMP_COLUMNS = ['TMIN', 'TMAX']
+ROLLING_MEAN_DAYS = [5, 10, 20, 30]
 contents = os.listdir(BASE_PATH)
 
 def _load_data(file: str) -> pd.DataFrame:
     """load in individual csv file from data folder."""
-    return pd.read_csv(f'{BASE_PATH}{file}', parse_dates=['DATE'])
+    if file.endswith('.csv'):
+        return pd.read_csv(f'{BASE_PATH}{file}', parse_dates=['DATE'])
+    else:
+        raise Exception(f'only accepted files are csv, {file} is not a csv. please address')
 
 def _generate_dummies(column: str, data: pd.DataFrame) -> Tuple[pd.DataFrame, list]:
     """generate dummies for a given pandas series."""
@@ -88,10 +95,9 @@ if __name__ == '__main__':
 
     def generate_additional_features(station: str, core_features: list, data: pd.DataFrame) -> pd.DataFrame:
         """generate additional features (running average)."""
-        days_rolling = [5, 10, 20, 30]
         data_temp = data[data['STATION'] == station]
-        for col in ['TMIN', 'TMAX']:
-            for days in days_rolling:
+        for col in TEMP_COLUMNS:
+            for days in ROLLING_MEAN_DAYS:
                 new_feature_column = f'{col}_{days}_DAY_AVG'
                 data_temp[new_feature_column] = data_temp[col].rolling(days).mean()
                 if new_feature_column not in core_features:
