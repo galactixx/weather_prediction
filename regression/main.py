@@ -20,6 +20,7 @@ from regression.linear_regression import linear_regression
 # --- NOT AN ISSUE WHEN OUR FILTERING IS APPLIED ---
 
 # interations with our data (between TMIN and TMAX) did not result in a better model
+# no need for transformations of variables
 
 # path and contents of weather data directory
 BASE_PATH = './data/'
