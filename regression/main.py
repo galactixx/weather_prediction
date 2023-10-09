@@ -161,4 +161,3 @@ if __name__ == '__main__':
         with open('./evals/regression.txt', 'w') as f:
             for item in evals:
                 f.write("%s\n" % item)
-            f.close()
