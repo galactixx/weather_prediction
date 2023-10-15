@@ -1,8 +1,8 @@
+from datetime import timedelta
+from typing import Tuple, List
+
 import numpy as np
 import pandas as pd
-from typing import List
-from typing import Tuple
-from datetime import timedelta
 import matplotlib.pyplot as plt
 from sklearn.metrics import (
     mean_absolute_error,

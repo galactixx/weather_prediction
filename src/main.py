@@ -1,21 +1,23 @@
 import os
 import warnings
+from typing import Tuple
+
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from typing import Tuple
 import scipy.stats as stats
-from itertools import chain
 import matplotlib.pyplot as plt
+from itertools import chain
 from statsmodels.tools.tools import add_constant
 from statsmodels.stats.outliers_influence import variance_inflation_factor
-warnings.filterwarnings('ignore')
 
 from src.static.columns import NOAANames
 from src.utils.utils import generate_test_train
 from src.regression.ridge import ridge_regression
 from src.regression.linear import linear_regression
 from src.regression.xgboost import xgboost_regression
+
+warnings.filterwarnings('ignore')
 
 # From documentation: 'Note: 9’s in a field (e.g.9999) indicate missing data or data that has not been received'
 # Remove these values as they are not valid to use in analysis

@@ -1,5 +1,6 @@
-import pandas as pd
 from typing import List
+
+import pandas as pd
 from xgboost import XGBRegressor
 from sklearn.model_selection import TimeSeriesSplit, GridSearchCV
 

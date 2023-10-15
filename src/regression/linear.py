@@ -1,5 +1,6 @@
-import pandas as pd
 from typing import List
+
+import pandas as pd
 from sklearn.linear_model import LinearRegression
 
 from src.static.models import Models
