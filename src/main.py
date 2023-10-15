@@ -14,6 +14,7 @@ warnings.filterwarnings('ignore')
 from src.utils.utils import generate_test_train
 from src.regression.ridge import ridge_regression
 from src.regression.linear import linear_regression
+from src.regression.xgboost import xgboost_regression
 
 # from documentation: 'Note: 9’s in a field (e.g.9999) indicate missing data or data that has not been received'
 # remove these values as they are not valid to use in analysis
@@ -154,10 +155,14 @@ if __name__ == '__main__':
                           data_train=data_train),
         ridge_regression(target=TARGET,
                          core_features=core_features,
-                         data=data_filtered)
+                         data=data_filtered),
+        xgboost_regression(target=TARGET,
+                           core_features=core_features,
+                           data_test=data_test,
+                           data_train=data_train)
     ]
     evals = list(map(str, chain.from_iterable(evals)))
     for eval in evals:
-        with open('./evals/regression.txt', 'w') as f:
+        with open('./src/evals/regression.txt', 'w') as f:
             for item in evals:
                 f.write("%s\n" % item)
