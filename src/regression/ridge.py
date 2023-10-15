@@ -6,6 +6,7 @@ from sklearn.model_selection import (
     GridSearchCV,
     TimeSeriesSplit)
 
+from src.static.models import Models
 from src.utils.utils import (
     generate_evals,
     generate_residual_plot
@@ -43,6 +44,6 @@ def ridge_regression(data_train_x: pd.DataFrame,
                                predictions=predictions)
 
     # Generate all evals
-    return generate_evals(test='Ridge Regression',
+    return generate_evals(model=Models.RIDGE_REGRESSION,
                           predictions=predictions,
                           data_test_y=data_test_y)

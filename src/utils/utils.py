@@ -2,13 +2,14 @@ import numpy as np
 import pandas as pd
 from typing import List
 from typing import Tuple
+from datetime import timedelta
 import matplotlib.pyplot as plt
 from sklearn.metrics import (
     mean_absolute_error,
     mean_squared_error,
     r2_score)
 
-from datetime import timedelta
+from src.static.models import Models
 
 def calculate_percentage_between_dates(percentage: float,
                                        start_date: pd.Timestamp,
@@ -56,19 +57,19 @@ def generate_test_train(data: pd.DataFrame,
 
     return data_train_x, data_test_x, data_train_y, data_test_y
 
-def generate_evals(test: str, predictions: list, data_test_y: pd.DataFrame) -> List[str]:
+def generate_evals(model: Models, predictions: list, data_test_y: pd.DataFrame) -> List[str]:
     """Generate evals after fitting and predicting values."""
     evals = []
 
     # R-squared
     r_squared = r2_score(data_test_y, predictions)
-    evals.append(f'R-Squared ({test}): {r_squared}')
+    evals.append(f'R-Squared ({model}): {r_squared}')
 
     # MAE
     mae = mean_absolute_error(data_test_y, predictions)
-    evals.append(f'Mean Absolute Error ({test}): {mae}')
+    evals.append(f'Mean Absolute Error ({model}): {mae}')
 
     # MSE
     mse = mean_squared_error(data_test_y, predictions)
-    evals.append(f'Mean Squared Error ({test}): {mse}')
+    evals.append(f'Mean Squared Error ({model}): {mse}')
     return evals
