@@ -9,26 +9,26 @@ from src.utils.utils import (
     generate_residual_plot
 )
 
-def xgboost_regression(target: str,
-                       core_features: list,
-                       data_test: pd.DataFrame,
-                       data_train: pd.DataFrame,
+def xgboost_regression(data_train_x: pd.DataFrame, 
+                       data_test_x: pd.DataFrame,
+                       data_train_y: pd.DataFrame,
+                       data_test_y: pd.DataFrame,
                        do_residuals: bool = True) -> List[str]:
     """XGBoost regression model on weather data from NOAA."""
+    param_grid = {}
 
-    # fit model with data
+    # Fit model with data
     xgb = XGBRegressor(objective="reg:squarederror")
-    xgb.fit(data_train[core_features], data_train[target])
-    predictions = xgb.predict(data_test[core_features])
-    residuals = np.array(data_test[target]) - predictions
+    xgb.fit(data_train_x, data_train_y)
+    predictions = xgb.predict(data_test_x)
+    residuals = data_test_y.values - predictions
 
-    # get predictions and generate residuals and plot
+    # Generate residuals and plot
     if do_residuals:
         generate_residual_plot(residuals=residuals,
                                predictions=predictions)
 
-    # generate all evals
+    # Generate all evals
     return generate_evals(test='XGBoost Regression',
-                          target=target,
                           predictions=predictions,
-                          data_test=data_test)
+                          data_test_y=data_test_y)

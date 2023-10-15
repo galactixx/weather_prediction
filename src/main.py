@@ -16,11 +16,11 @@ from src.regression.ridge import ridge_regression
 from src.regression.linear import linear_regression
 from src.regression.xgboost import xgboost_regression
 
-# from documentation: 'Note: 9’s in a field (e.g.9999) indicate missing data or data that has not been received'
+# From documentation: 'Note: 9’s in a field (e.g.9999) indicate missing data or data that has not been received'
 # remove these values as they are not valid to use in analysis
 # --- NOT AN ISSUE WHEN OUR FILTERING IS APPLIED ---
 
-# interations with our data (between TMIN and TMAX) did not result in a better model
+# Interations with our data (between TMIN and TMAX) did not result in a better model
 # no need for transformations of variables
 
 # path and contents of weather data directory
@@ -84,17 +84,17 @@ if __name__ == '__main__':
     do_correlation_matrix = False
     do_normal_feature_distribution = False
 
-    # make index as date
+    # Make index as date
     data = pd.concat(_load_data(file=file) for file in contents)
     data = data.sort_values(by=['DATE'])
     data.index = data['DATE']
 
-    # shift TMAX value by one groupbed by STATION
+    # Shift TMAX value by one groupbed by STATION
     TARGET = 'TMAX_NEXT_DAY'
     data[TARGET] = data.groupby(['STATION']).TMAX.shift(-1)
 
     core_features = ['PRCP', 'STATION', 'TMIN', 'TMAX']
-    # since there are multiple stations in the data, we would generate categorical variable based on STATION
+    # Since there are multiple stations in the data, we would generate categorical variable based on STATION
     # but since only one station actually has non-null TMAX values, we will not do this and instead
     # remove null station data
     data = data[[TARGET] + core_features].dropna()
@@ -115,51 +115,55 @@ if __name__ == '__main__':
     data = pd.concat(generate_additional_features(station=station, core_features=core_features,
                                                   data=data) for station in stations)
     
-    # filter only for core features plus target
+    # Filter only for core features plus target
     data_filtered = data[[TARGET] + core_features]
 
-    # remove all na values, while we could fill in the NULL percipitation values
-    # its a small % so we remove to facilitate analysis
+    # Remove all na values, while we could fill in the NULL percipitation values
+    # Its a small % so we remove to facilitate analysis
     data_filtered = data_filtered.dropna()
     data_filtered, dummy_columns = _generate_dummies(column='STATION', data=data_filtered)
     core_features.extend(dummy_columns)
     core_features.remove('STATION')
 
-    # check linear relationship between features and target
+    # Check linear relationship between features and target
     if do_linear_comparison:
         _generate_linear_comparisons(target=TARGET,
                                      core_features=core_features,
                                      data_filtered=data_filtered)
 
-    # check for multicollinearity within data
+    # Check for multicollinearity within data
     if do_vif_test:
         _generate_vif_test(core_features=core_features, data_filtered=data_filtered)
 
-    # correlation matrix
+    # Correlation matrix
     if do_correlation_matrix:
         _generate_correlation_matrix(data_filtered=data_filtered)
 
-    # split model into train and test data
-    data_train, data_test = generate_test_train(data=data_filtered)
-
-    # check normal distribution of features
+    # Check normal distribution of features
     if do_normal_feature_distribution:
         _generate_feature_distributions(core_features=core_features,
-                                        data_filtered=data_train)
+                                        data_filtered=data_filtered)
 
-    # all evals generated from regression model
+    # Generate training and testing data
+    data_train_x, data_test_x, data_train_y, data_test_y = generate_test_train(
+        data=data_filtered,
+        target=TARGET,
+        core_features=core_features)
+
+    # All evals generated from regression model
     evals = [
-        linear_regression(target=TARGET,
-                          core_features=core_features,
-                          data_test=data_test,
-                          data_train=data_train),
-        ridge_regression(target=TARGET,
-                         core_features=core_features,
-                         data=data_filtered),
-        xgboost_regression(target=TARGET,
-                           core_features=core_features,
-                           data_test=data_test,
-                           data_train=data_train)
+        linear_regression(data_train_x=data_train_x, 
+                          data_test_x=data_test_x,
+                          data_train_y=data_train_y,
+                          data_test_y=data_test_y),
+        ridge_regression(data_train_x=data_train_x, 
+                         data_test_x=data_test_x,
+                         data_train_y=data_train_y,
+                         data_test_y=data_test_y),
+        xgboost_regression(data_train_x=data_train_x, 
+                           data_test_x=data_test_x,
+                           data_train_y=data_train_y,
+                           data_test_y=data_test_y)
     ]
     evals = list(map(str, chain.from_iterable(evals)))
     for eval in evals:

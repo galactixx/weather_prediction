@@ -37,29 +37,38 @@ def generate_residual_plot(residuals: np.ndarray, predictions: np.ndarray) -> No
     plt.tight_layout()
     plt.show()
 
-def generate_test_train(data: pd.DataFrame, percentage: float = 75.0) -> Tuple[pd.DataFrame, pd.DataFrame]:
+def generate_test_train(data: pd.DataFrame,
+                        target: str,
+                        core_features: list,
+                        percentage: float = 75.0) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """Generate train and test set from time series data given a percentage."""
     split_date = calculate_percentage_between_dates(percentage=percentage,
                                                     start_date=min(data.index),
                                                     end_date=max(data.index))
 
+    # Split up into initial train and test datasets
     data_train = data[data.index < split_date]
     data_test = data[data.index >= split_date]
-    return data_train, data_test
 
-def generate_evals(test: str, target: str, predictions: list, data_test: pd.DataFrame) -> List[str]:
-    """generate evals after fitting and predicting values."""
+    # Further split up the datasets into x and y
+    data_train_x, data_train_y = data_train[core_features], data_train[target]
+    data_test_x, data_test_y = data_test[core_features], data_test[target]
+
+    return data_train_x, data_test_x, data_train_y, data_test_y
+
+def generate_evals(test: str, predictions: list, data_test_y: pd.DataFrame) -> List[str]:
+    """Generate evals after fitting and predicting values."""
     evals = []
 
-    # get r-squared from test data
-    r_squared = r2_score(data_test[target], predictions)
+    # R-squared
+    r_squared = r2_score(data_test_y, predictions)
     evals.append(f'R-Squared ({test}): {r_squared}')
 
-    # get the mae
-    mae = mean_absolute_error(data_test[target], predictions)
+    # MAE
+    mae = mean_absolute_error(data_test_y, predictions)
     evals.append(f'Mean Absolute Error ({test}): {mae}')
 
-    # get the mse
-    mse = mean_squared_error(data_test[target], predictions)
+    # MSE
+    mse = mean_squared_error(data_test_y, predictions)
     evals.append(f'Mean Squared Error ({test}): {mse}')
     return evals
