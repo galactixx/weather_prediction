@@ -33,6 +33,11 @@ TEMP_COLUMNS = [NOAANames.TMIN, NOAANames.TMAX]
 ROLLING_MEAN_DAYS = [5, 10, 20, 30]
 contents = os.listdir(BASE_PATH)
 
+DO_VIF_TEST = False
+DO_LINEAR_COMPARISON = False
+DO_CORRELATION_MATRIX = False
+DO_FEATURE_DISTRIBUTION = False
+
 def _generate_weights(days: int) -> list:
     """Dynamically generate weights based on number of days as input."""
     return list(range(1, days+1))
@@ -83,10 +88,6 @@ def _generate_correlation_matrix(data_filtered: pd.DataFrame) -> None:
     plt.show()
 
 if __name__ == '__main__':
-    do_vif_test = False
-    do_linear_comparison = False
-    do_correlation_matrix = False
-    do_normal_feature_distribution = False
 
     # Make index as date
     data = pd.concat(_load_data(file=file) for file in contents)
@@ -94,14 +95,13 @@ if __name__ == '__main__':
     data.index = data[NOAANames.DATE]
 
     # Shift TMAX value by one groupbed by STATION
-    TARGET = NOAANames.TMAX_NEXT_DAY
-    data[TARGET] = data.groupby([NOAANames.STATION]).TMAX.shift(-1)
+    data[NOAANames.TMAX_NEXT_DAY] = data.groupby([NOAANames.STATION]).TMAX.shift(-1)
 
     core_features = [NOAANames.PRCP, NOAANames.STATION, NOAANames.TMIN, NOAANames.TMAX]
     # Since there are multiple stations in the data, we would generate categorical variable based on STATION
     # but since only one station actually has non-null TMAX values, we will not do this and instead
     # remove null station data
-    data = data[[TARGET] + core_features].dropna()
+    data = data[[NOAANames.TMAX_NEXT_DAY] + core_features].dropna()
     stations = data[NOAANames.STATION].unique().tolist()
 
     def generate_additional_features(station: str, core_features: list, data: pd.DataFrame) -> pd.DataFrame:
@@ -120,7 +120,7 @@ if __name__ == '__main__':
                                                   data=data) for station in stations)
     
     # Filter only for core features plus target
-    data_filtered = data[[TARGET] + core_features]
+    data_filtered = data[[NOAANames.TMAX_NEXT_DAY] + core_features]
 
     # Remove all na values, while we could fill in the NULL percipitation values
     # Its a small % so we remove to facilitate analysis
@@ -130,28 +130,28 @@ if __name__ == '__main__':
     core_features.remove(NOAANames.STATION)
 
     # Check linear relationship between features and target
-    if do_linear_comparison:
-        _generate_linear_comparisons(target=TARGET,
+    if DO_LINEAR_COMPARISON:
+        _generate_linear_comparisons(target=NOAANames.TMAX_NEXT_DAY,
                                      core_features=core_features,
                                      data_filtered=data_filtered)
 
     # Check for multicollinearity within data
-    if do_vif_test:
+    if DO_VIF_TEST:
         _generate_vif_test(core_features=core_features, data_filtered=data_filtered)
 
     # Correlation matrix
-    if do_correlation_matrix:
+    if DO_CORRELATION_MATRIX:
         _generate_correlation_matrix(data_filtered=data_filtered)
 
     # Check normal distribution of features
-    if do_normal_feature_distribution:
+    if DO_FEATURE_DISTRIBUTION:
         _generate_feature_distributions(core_features=core_features,
                                         data_filtered=data_filtered)
 
     # Generate training and testing data
     data_train_x, data_test_x, data_train_y, data_test_y = generate_test_train(
         data=data_filtered,
-        target=TARGET,
+        target=NOAANames.TMAX_NEXT_DAY,
         core_features=core_features)
 
     # All evals generated from regression model
