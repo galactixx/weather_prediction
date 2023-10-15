@@ -3,7 +3,7 @@ import pandas as pd
 from typing import List
 from sklearn.linear_model import LinearRegression
 
-from regression.utils import (
+from src.utils.utils import (
     generate_evals,
     generate_residual_plot
 )

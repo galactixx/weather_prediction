@@ -5,7 +5,7 @@ from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import TimeSeriesSplit
 
-from regression.utils import (
+from src.utils.utils import (
     generate_evals,
     generate_test_train,
     generate_residual_plot
