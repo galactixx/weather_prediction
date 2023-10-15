@@ -26,29 +26,30 @@ from src.regression.xgboost import xgboost_regression
 
 # path and contents of weather data directory
 BASE_PATH = './data/'
+EVALS_PATH = './src/evals/regression.txt'
 TEMP_COLUMNS = [NOAANames.TMIN, NOAANames.TMAX]
 ROLLING_MEAN_DAYS = [5, 10, 20, 30]
 contents = os.listdir(BASE_PATH)
 
 def _generate_weights(days: int) -> list:
-    """dynamically generate weights based on number of days as input."""
+    """Dynamically generate weights based on number of days as input."""
     return list(range(1, days+1))
 
 def _load_data(file: str) -> pd.DataFrame:
-    """load in individual csv file from data folder."""
+    """Load in individual csv file from data folder."""
     if file.endswith('.csv'):
         return pd.read_csv(f'{BASE_PATH}{file}', parse_dates=[NOAANames.DATE])
     else:
         raise Exception(f'only accepted files are csv, {file} is not a csv. please address')
 
 def _generate_dummies(column: str, data: pd.DataFrame) -> Tuple[pd.DataFrame, list]:
-    """generate dummies for a given pandas series."""
+    """Generate dummies for a given pandas series."""
     data_dummies = pd.get_dummies(data[column], prefix=column)
     data = data.drop(column, axis=1)
     return data.join(data_dummies), data_dummies.columns.tolist()
 
 def _generate_feature_distributions(core_features: list, data_filtered: pd.DataFrame) -> None:
-    """generate qq-plot and histogram with features."""
+    """Generate qq-plot and histogram with features."""
     for feature in core_features:
         fig, axs = plt.subplots(1, 2, figsize=(10, 5))
         stats.probplot(data_filtered[feature], dist="norm", plot=axs[0])
@@ -61,20 +62,20 @@ def _generate_feature_distributions(core_features: list, data_filtered: pd.DataF
         plt.show()
 
 def _generate_linear_comparisons(target: str, core_features: list, data_filtered: pd.DataFrame) -> None:
-    """check linear relationship between features and target."""
+    """Check linear relationship between features and target."""
     for feature in core_features:
         plt.scatter(data_filtered[feature], data_filtered[target])
         plt.show()
 
 def _generate_vif_test(core_features: list, data_filtered: pd.DataFrame) -> None:
-    """check for multicollinearity within data."""
+    """Check for multicollinearity within data."""
     X = add_constant(data_filtered[core_features])
     vif_data = pd.Series([variance_inflation_factor(X.values, i) 
                           for i in range(X.shape[1])], index=X.columns)
     print(vif_data)
 
 def _generate_correlation_matrix(data_filtered: pd.DataFrame) -> None:
-    """correlation matrix."""
+    """Correlation matrix."""
     matrix = data_filtered.corr().round(2)
     sns.heatmap(matrix, annot=True)
     plt.show()
@@ -102,7 +103,7 @@ if __name__ == '__main__':
     stations = data[NOAANames.STATION].unique().tolist()
 
     def generate_additional_features(station: str, core_features: list, data: pd.DataFrame) -> pd.DataFrame:
-        """generate additional features."""
+        """Generate additional features."""
         data_temp = data[data[NOAANames.STATION] == station]
         for col in TEMP_COLUMNS:
             for days in ROLLING_MEAN_DAYS:
@@ -168,6 +169,6 @@ if __name__ == '__main__':
     ]
     evals = list(map(str, chain.from_iterable(evals)))
     for eval in evals:
-        with open('./src/evals/regression.txt', 'w') as f:
+        with open(EVALS_PATH, 'w') as f:
             for item in evals:
                 f.write("%s\n" % item)
