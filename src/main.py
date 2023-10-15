@@ -11,21 +11,22 @@ from statsmodels.tools.tools import add_constant
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 warnings.filterwarnings('ignore')
 
+from src.static.columns import NOAANames
 from src.utils.utils import generate_test_train
 from src.regression.ridge import ridge_regression
 from src.regression.linear import linear_regression
 from src.regression.xgboost import xgboost_regression
 
 # From documentation: 'Note: 9’s in a field (e.g.9999) indicate missing data or data that has not been received'
-# remove these values as they are not valid to use in analysis
+# Remove these values as they are not valid to use in analysis
 # --- NOT AN ISSUE WHEN OUR FILTERING IS APPLIED ---
 
 # Interations with our data (between TMIN and TMAX) did not result in a better model
-# no need for transformations of variables
+# No need for transformations of variables
 
 # path and contents of weather data directory
 BASE_PATH = './data/'
-TEMP_COLUMNS = ['TMIN', 'TMAX']
+TEMP_COLUMNS = [NOAANames.TMIN, NOAANames.TMAX]
 ROLLING_MEAN_DAYS = [5, 10, 20, 30]
 contents = os.listdir(BASE_PATH)
 
@@ -36,7 +37,7 @@ def _generate_weights(days: int) -> list:
 def _load_data(file: str) -> pd.DataFrame:
     """load in individual csv file from data folder."""
     if file.endswith('.csv'):
-        return pd.read_csv(f'{BASE_PATH}{file}', parse_dates=['DATE'])
+        return pd.read_csv(f'{BASE_PATH}{file}', parse_dates=[NOAANames.DATE])
     else:
         raise Exception(f'only accepted files are csv, {file} is not a csv. please address')
 
@@ -86,23 +87,23 @@ if __name__ == '__main__':
 
     # Make index as date
     data = pd.concat(_load_data(file=file) for file in contents)
-    data = data.sort_values(by=['DATE'])
-    data.index = data['DATE']
+    data = data.sort_values(by=[NOAANames.DATE])
+    data.index = data[NOAANames.DATE]
 
     # Shift TMAX value by one groupbed by STATION
-    TARGET = 'TMAX_NEXT_DAY'
-    data[TARGET] = data.groupby(['STATION']).TMAX.shift(-1)
+    TARGET = NOAANames.TMAX_NEXT_DAY
+    data[TARGET] = data.groupby([NOAANames.STATION]).TMAX.shift(-1)
 
-    core_features = ['PRCP', 'STATION', 'TMIN', 'TMAX']
+    core_features = [NOAANames.PRCP, NOAANames.STATION, NOAANames.TMIN, NOAANames.TMAX]
     # Since there are multiple stations in the data, we would generate categorical variable based on STATION
     # but since only one station actually has non-null TMAX values, we will not do this and instead
     # remove null station data
     data = data[[TARGET] + core_features].dropna()
-    stations = data['STATION'].unique().tolist()
+    stations = data[NOAANames.STATION].unique().tolist()
 
     def generate_additional_features(station: str, core_features: list, data: pd.DataFrame) -> pd.DataFrame:
         """generate additional features."""
-        data_temp = data[data['STATION'] == station]
+        data_temp = data[data[NOAANames.STATION] == station]
         for col in TEMP_COLUMNS:
             for days in ROLLING_MEAN_DAYS:
                 new_feature_column = f'{col}_{days}_DAY_WEIGHT_AVG'
@@ -121,9 +122,9 @@ if __name__ == '__main__':
     # Remove all na values, while we could fill in the NULL percipitation values
     # Its a small % so we remove to facilitate analysis
     data_filtered = data_filtered.dropna()
-    data_filtered, dummy_columns = _generate_dummies(column='STATION', data=data_filtered)
+    data_filtered, dummy_columns = _generate_dummies(column=NOAANames.STATION, data=data_filtered)
     core_features.extend(dummy_columns)
-    core_features.remove('STATION')
+    core_features.remove(NOAANames.STATION)
 
     # Check linear relationship between features and target
     if do_linear_comparison:
