@@ -1,0 +1,9 @@
+{
+    "BASE_PATH": "./data/",
+    "EVALS_PATH": "./src/evals/regression.txt",
+    "ROLLING_MEAN_DAYS": [5, 10, 20, 30],
+    "DO_VIF_TEST": false,
+    "DO_LINEAR_COMPARISON": false,
+    "DO_CORRELATION_MATRIX": false,
+    "DO_FEATURE_DISTRIBUTION": false
+}

@@ -1,9 +1,15 @@
-R-Squared (Linear Regresion): 0.8282890096446636
-Mean Absolute Error (Linear Regresion): 4.596827873999382
-Mean Squared Error (Linear Regresion): 41.50771806417402
-R-Squared (Ridge Regression): 0.8282906396767138
-Mean Absolute Error (Ridge Regression): 4.596798344964713
-Mean Squared Error (Ridge Regression): 41.507324036333216
-R-Squared (XGBoost Regression): 0.8418089626723463
-Mean Absolute Error (XGBoost Regression): 4.468345743040132
-Mean Squared Error (XGBoost Regression): 38.23953821527428
+2023-09-14 R-Squared (Linear Regresion): 0.8282890096446636
+2023-09-14 Mean Absolute Error (Linear Regresion): 4.596827873999382
+2023-09-14 Mean Squared Error (Linear Regresion): 41.50771806417402
+2023-09-14 R-Squared (Ridge Regression): 0.8282906396767138
+2023-09-14 Mean Absolute Error (Ridge Regression): 4.596798344964713
+2023-09-14 Mean Squared Error (Ridge Regression): 41.507324036333216
+2023-09-14 R-Squared (XGBoost Regression): 0.8418089626723463
+2023-09-14 Mean Absolute Error (XGBoost Regression): 4.468345743040132
+2023-09-14 Mean Squared Error (XGBoost Regression): 38.23953821527428
+2023-10-19 R-Squared (Linear Regresion): 0.8282890096446636
+2023-10-19 Mean Absolute Error (Linear Regresion): 4.596827873999382
+2023-10-19 Mean Squared Error (Linear Regresion): 41.50771806417402
+2023-10-19 R-Squared (Ridge Regression): 0.8282906396767138
+2023-10-19 Mean Absolute Error (Ridge Regression): 4.596798344964713
+2023-10-19 Mean Squared Error (Ridge Regression): 41.507324036333216

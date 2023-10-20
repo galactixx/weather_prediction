@@ -1,5 +1,7 @@
 import os
+import json
 import warnings
+from datetime import datetime
 from typing import Tuple
 
 import numpy as np
@@ -26,17 +28,23 @@ warnings.filterwarnings('ignore')
 # Interations with our data (between TMIN and TMAX) did not result in a better model
 # No need for transformations of variables
 
-# Path variables and other constants
-BASE_PATH = './data/'
-EVALS_PATH = './src/evals/regression.txt'
-TEMP_COLUMNS = [NOAANames.TMIN, NOAANames.TMAX]
-ROLLING_MEAN_DAYS = [5, 10, 20, 30]
-contents = os.listdir(BASE_PATH)
+with open('config.json') as config_file:
+    config = json.load(config_file)
 
-DO_VIF_TEST = False
-DO_LINEAR_COMPARISON = False
-DO_CORRELATION_MATRIX = False
-DO_FEATURE_DISTRIBUTION = False
+date_today = datetime.today().date()
+
+# Path variables and other constants
+BASE_PATH = config["BASE_PATH"]
+EVALS_PATH = config["EVALS_PATH"]
+ROLLING_MEAN_DAYS = config["ROLLING_MEAN_DAYS"]
+DO_VIF_TEST = config["DO_VIF_TEST"]
+DO_LINEAR_COMPARISON = config["DO_LINEAR_COMPARISON"]
+DO_CORRELATION_MATRIX = config["DO_CORRELATION_MATRIX"]
+DO_FEATURE_DISTRIBUTION = config["DO_FEATURE_DISTRIBUTION"]
+
+TEMP_COLUMNS = [NOAANames.TMIN, NOAANames.TMAX]
+
+contents = os.listdir(BASE_PATH)
 
 def _generate_weights(days: int) -> list:
     """Dynamically generate weights based on number of days as input."""
@@ -157,10 +165,9 @@ if __name__ == '__main__':
     evals = [
         linear_regression(data_test_train=data_test_train),
         ridge_regression(data_test_train=data_test_train),
-        xgboost_regression(data_test_train=data_test_train)
+        # xgboost_regression(data_test_train=data_test_train)
     ]
     evals = list(map(str, chain.from_iterable(evals)))
-    for eval in evals:
-        with open(EVALS_PATH, 'w') as f:
-            for item in evals:
-                f.write("%s\n" % item)
+    with open(EVALS_PATH, 'a') as f:
+        for eval in evals:
+            f.write(f"\n{date_today} {eval}")
