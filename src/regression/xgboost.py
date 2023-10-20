@@ -1,19 +1,16 @@
 from typing import List
 
-import pandas as pd
 from xgboost import XGBRegressor
 from sklearn.model_selection import TimeSeriesSplit, GridSearchCV
 
 from src.static.models import Models
 from src.utils.utils import (
+    Data,
     generate_evals,
     generate_residual_plot
 )
 
-def xgboost_regression(data_train_x: pd.DataFrame, 
-                       data_test_x: pd.DataFrame,
-                       data_train_y: pd.DataFrame,
-                       data_test_y: pd.DataFrame,
+def xgboost_regression(data_test_train: Data,
                        do_residuals: bool = True,
                        do_feature_importances: bool = True) -> List[str]:
     """XGBoost regression model on weather data from NOAA."""
@@ -25,7 +22,7 @@ def xgboost_regression(data_train_x: pd.DataFrame,
         'reg_alpha': [0, 0.01, 0.1],
         'reg_lambda': [0, 0.01, 0.1]
     }
-    eval_set = [(data_test_x, data_test_y)]
+    eval_set = [(data_test_train.x_test, data_test_train.y_test)]
 
     # Using time series split to be used in cross-validation
     tscv = TimeSeriesSplit(n_splits=5)
@@ -37,14 +34,18 @@ def xgboost_regression(data_train_x: pd.DataFrame,
         param_grid=param_grid,
         cv=tscv,
         scoring='neg_mean_squared_error')
-    grid_search.fit(data_train_x, data_train_y, eval_metric="rmse", eval_set=eval_set, verbose=True)
+    grid_search.fit(data_test_train.x_train,
+                    data_test_train.y_train,
+                    eval_metric="rmse",
+                    eval_set=eval_set,
+                    verbose=True)
 
     # Get best parameter values from grid search
     best_params = grid_search.best_params_
     best_model = XGBRegressor(**best_params)
-    best_model.fit(data_train_x, data_train_y)
-    predictions = best_model.predict(data_test_x)
-    residuals = data_test_y.values - predictions
+    best_model.fit(data_test_train.x_train, data_test_train.y_train)
+    predictions = best_model.predict(data_test_train.x_test)
+    residuals = data_test_train.y_test.values - predictions
 
     # Generate feature importances
     if do_feature_importances:
@@ -59,4 +60,4 @@ def xgboost_regression(data_train_x: pd.DataFrame,
     # Generate all evals
     return generate_evals(model=Models.XGBOOST_REGRESSION,
                           predictions=predictions,
-                          data_test_y=data_test_y)
+                          data_test_y=data_test_train.y_test)

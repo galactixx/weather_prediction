@@ -26,7 +26,7 @@ warnings.filterwarnings('ignore')
 # Interations with our data (between TMIN and TMAX) did not result in a better model
 # No need for transformations of variables
 
-# path and contents of weather data directory
+# Path variables and other constants
 BASE_PATH = './data/'
 EVALS_PATH = './src/evals/regression.txt'
 TEMP_COLUMNS = [NOAANames.TMIN, NOAANames.TMAX]
@@ -149,25 +149,15 @@ if __name__ == '__main__':
                                         data_filtered=data_filtered)
 
     # Generate training and testing data
-    data_train_x, data_test_x, data_train_y, data_test_y = generate_test_train(
-        data=data_filtered,
-        target=NOAANames.TMAX_NEXT_DAY,
-        core_features=core_features)
+    data_test_train = generate_test_train(data=data_filtered,
+                                          target=NOAANames.TMAX_NEXT_DAY,
+                                          core_features=core_features)
 
     # All evals generated from regression model
     evals = [
-        linear_regression(data_train_x=data_train_x, 
-                          data_test_x=data_test_x,
-                          data_train_y=data_train_y,
-                          data_test_y=data_test_y),
-        ridge_regression(data_train_x=data_train_x, 
-                         data_test_x=data_test_x,
-                         data_train_y=data_train_y,
-                         data_test_y=data_test_y),
-        xgboost_regression(data_train_x=data_train_x, 
-                           data_test_x=data_test_x,
-                           data_train_y=data_train_y,
-                           data_test_y=data_test_y)
+        linear_regression(data_test_train=data_test_train),
+        ridge_regression(data_test_train=data_test_train),
+        xgboost_regression(data_test_train=data_test_train)
     ]
     evals = list(map(str, chain.from_iterable(evals)))
     for eval in evals:

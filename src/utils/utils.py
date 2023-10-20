@@ -1,15 +1,23 @@
 from datetime import timedelta
-from typing import Tuple, List
+from typing import List
 
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from dataclasses import dataclass 
 from sklearn.metrics import (
     mean_absolute_error,
     mean_squared_error,
     r2_score)
 
 from src.static.models import Models
+
+@dataclass
+class Data:
+    x_train: pd.DataFrame
+    y_train: pd.DataFrame
+    x_test: pd.DataFrame
+    y_test: pd.DataFrame
 
 def calculate_percentage_between_dates(percentage: float,
                                        start_date: pd.Timestamp,
@@ -41,7 +49,7 @@ def generate_residual_plot(residuals: np.ndarray, predictions: np.ndarray) -> No
 def generate_test_train(data: pd.DataFrame,
                         target: str,
                         core_features: list,
-                        percentage: float = 75.0) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+                        percentage: float = 75.0) -> Data:
     """Generate train and test set from time series data given a percentage."""
     split_date = calculate_percentage_between_dates(percentage=percentage,
                                                     start_date=min(data.index),
@@ -55,7 +63,7 @@ def generate_test_train(data: pd.DataFrame,
     data_train_x, data_train_y = data_train[core_features], data_train[target]
     data_test_x, data_test_y = data_test[core_features], data_test[target]
 
-    return data_train_x, data_test_x, data_train_y, data_test_y
+    return Data(x_train=data_train_x, x_test=data_test_x, y_train=data_train_y, y_test=data_test_y)
 
 def generate_evals(model: Models, predictions: list, data_test_y: pd.DataFrame) -> List[str]:
     """Generate evals after fitting and predicting values."""
