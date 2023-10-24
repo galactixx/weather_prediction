@@ -1,5 +1,4 @@
-from datetime import timedelta
-from typing import List
+from typing import Optional, Tuple, List
 
 import numpy as np
 import pandas as pd
@@ -18,21 +17,8 @@ class Data:
     y_train: pd.DataFrame
     x_test: pd.DataFrame
     y_test: pd.DataFrame
-
-def calculate_percentage_between_dates(percentage: float,
-                                       start_date: pd.Timestamp,
-                                       end_date: pd.Timestamp) -> pd.Timestamp:
-    """Calculate date between start and end date which is some percentage between range of dates."""
-
-    # Calculate the total time duration between start_date and end_date
-    total_duration = (end_date - start_date).total_seconds()
-
-    # Calculate the time duration for the given percentage
-    target_duration = (percentage / 100) * total_duration
-
-    # Calculate the target date by adding the duration to the start date
-    target_date = start_date + timedelta(seconds=target_duration)
-    return target_date
+    x_val: Optional[pd.DataFrame] = None
+    y_val: Optional[pd.DataFrame] = None
 
 def generate_residual_plot(residuals: np.ndarray, predictions: np.ndarray) -> None:
     """generate residual plot and histogram after fitting model."""
@@ -49,21 +35,41 @@ def generate_residual_plot(residuals: np.ndarray, predictions: np.ndarray) -> No
 def generate_test_train(data: pd.DataFrame,
                         target: str,
                         core_features: list,
-                        percentage: float = 75.0) -> Data:
+                        train_percentage: float = 0.70, 
+                        do_validation: bool = False) -> Data:
     """Generate train and test set from time series data given a percentage."""
-    split_date = calculate_percentage_between_dates(percentage=percentage,
-                                                    start_date=min(data.index),
-                                                    end_date=max(data.index))
 
-    # Split up into initial train and test datasets
-    data_train = data[data.index < split_date]
-    data_test = data[data.index >= split_date]
+    def data_split_into_x_y(data: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
+        """Given some data, split into x and y datasets."""
+        return data[core_features], data[target]
+    
+    # Determine the split points based on your data's time index
+    test_percentage = 1 - train_percentage
+    train_size = int(train_percentage * len(data))
+    test_size = int(test_percentage * len(data))
 
-    # Further split up the datasets into x and y
-    data_train_x, data_train_y = data_train[core_features], data_train[target]
-    data_test_x, data_test_y = data_test[core_features], data_test[target]
+    # Split the fataFrame into training, validation, and test sets
+    data_train = data.iloc[:train_size]
 
-    return Data(x_train=data_train_x, x_test=data_test_x, y_train=data_train_y, y_test=data_test_y)
+    # Split the data accordingly into X and y for training set
+    X_train, y_train = data_split_into_x_y(data=data_train)
+
+    # Generate validation set only if set to do validation
+    if do_validation:
+        test_size = int((test_percentage / 2) * len(data))
+
+        data_val = data.iloc[train_size:train_size + test_size]
+        data_test = data.iloc[train_size + test_size:]
+
+        X_test, y_test = data_split_into_x_y(data=data_test)
+        X_val, y_val = data_split_into_x_y(data=data_val)
+
+        return Data(x_train=X_train, x_test=X_test, y_train=y_train, y_test=y_test, x_val=X_val, y_val=y_val)
+    else:
+        data_test = data.iloc[train_size:]
+        X_test, y_test = data_split_into_x_y(data=data_test)
+
+        return Data(x_train=X_train, x_test=X_test, y_train=y_train, y_test=y_test)
 
 def generate_evals(model: Models, predictions: list, data_test_y: pd.DataFrame) -> List[str]:
     """Generate evals after fitting and predicting values."""

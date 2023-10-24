@@ -103,7 +103,7 @@ if __name__ == '__main__':
     data.index = data[NOAANames.DATE]
 
     # Shift TMAX value by one groupbed by STATION
-    data[NOAANames.TMAX_NEXT_DAY] = data.groupby([NOAANames.STATION]).TMAX.shift(-1)
+    data[NOAANames.TMAX_NEXT_DAY] = data.groupby([NOAANames.STATION])[NOAANames.TMAX].shift(-1)
 
     core_features = [NOAANames.PRCP, NOAANames.STATION, NOAANames.TMIN, NOAANames.TMAX]
     # Since there are multiple stations in the data, we would generate categorical variable based on STATION
@@ -133,6 +133,8 @@ if __name__ == '__main__':
     # Remove all na values, while we could fill in the NULL percipitation values
     # Its a small % so we remove to facilitate analysis
     data_filtered = data_filtered.dropna()
+
+    # Generate dummies for STATION variable
     data_filtered, dummy_columns = _generate_dummies(column=NOAANames.STATION, data=data_filtered)
     core_features.extend(dummy_columns)
     core_features.remove(NOAANames.STATION)
@@ -156,18 +158,24 @@ if __name__ == '__main__':
         _generate_feature_distributions(core_features=core_features,
                                         data_filtered=data_filtered)
 
-    # Generate training and testing data
+    # Generate training and testing data for linear/ridge regression
     data_test_train = generate_test_train(data=data_filtered,
                                           target=NOAANames.TMAX_NEXT_DAY,
                                           core_features=core_features)
+    
+    # Generate training and testing data for xgboost regression
+    data_test_train_val = generate_test_train(data=data_filtered,
+                                              target=NOAANames.TMAX_NEXT_DAY,
+                                              core_features=core_features,
+                                              do_validation=True)
 
     # All evals generated from regression model
     evals = [
         linear_regression(data_test_train=data_test_train),
         ridge_regression(data_test_train=data_test_train),
-        # xgboost_regression(data_test_train=data_test_train)
+        xgboost_regression(data_test_train=data_test_train_val)
     ]
     evals = list(map(str, chain.from_iterable(evals)))
-    with open(EVALS_PATH, 'a') as f:
+    with open(EVALS_PATH, 'w') as f:
         for eval in evals:
-            f.write(f"\n{date_today} {eval}")
+            f.write(f"{date_today} {eval}\n")
